@@ -155,8 +155,14 @@ def obtener_factores_influyentes(pipeline, datos_usuario_dict):
         coeficientes = clasificador.coef_[0]
         contribuciones = valores * coeficientes
 
+        # Limpiamos los prefijos técnicos del ColumnTransformer (ej. "num_minmax__bugs_per_day" -> "bugs_per_day")
+        nombres_limpios = [
+            nombre.split('__')[-1] if '__' in nombre else nombre
+            for nombre in nombres_features
+        ]
+
         df_contrib = pd.DataFrame({
-            'Variable': nombres_features,
+            'Variable': nombres_limpios,
             'Contribución': contribuciones
         }).sort_values('Contribución', ascending=False)
 
@@ -253,7 +259,6 @@ Probabilidad de riesgo: {probabilidad * 100:.2f}%
 
     # 6. GUARDAMOS EN EL HISTORIAL DE LA SESIÓN
     st.session_state.historial.append({
-        "Hora": datetime.now().strftime('%H:%M:%S'),
         "Edad": age,
         "Trabajo (h)": daily_work_hours,
         "Sueño (h)": sleep_hours,
