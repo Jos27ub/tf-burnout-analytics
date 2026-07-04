@@ -34,16 +34,16 @@ with st.sidebar:
     st.header("ℹ️ Información del Modelo")
     st.markdown("""
     **Proyecto:** Predicción de Burnout en Desarrolladores TI
-    **Algoritmo:** Regresión Logística (Optimizada)
-    **Técnica de selección:** SelectKBest + GridSearchCV
+    **Algoritmo:** Regresión Logística (Optimizada, class_weight='balanced')
+    **Técnica de selección:** RFECV (Recursive Feature Elimination with CV)
     """)
     st.divider()
-    st.subheader("📈 Métricas del Modelo")
+    st.subheader("📈 Métricas del Modelo (Test)")
     col_a, col_b = st.columns(2)
-    col_a.metric("F1-Score", "0.771")
-    col_a.metric("Sensibilidad", "0.741")
-    col_b.metric("Exactitud", "0.886")
-    col_b.metric("Especificidad", "0.937")
+    col_a.metric("F1-Score", "0.764")
+    col_a.metric("Sensibilidad", "0.902")
+    col_b.metric("Exactitud", "0.856")
+    col_b.metric("Especificidad", "0.840")
     st.divider()
     st.caption(f"Última actualización de sesión: {datetime.now().strftime('%d/%m/%Y')}")
     st.caption("Trabajo Final - Machine Learning - UPC")
