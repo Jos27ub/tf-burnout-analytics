@@ -36,6 +36,7 @@ with st.sidebar:
     **Proyecto:** Predicción de Burnout en Desarrolladores TI
     **Algoritmo:** Regresión Logística (Optimizada, class_weight='balanced')
     **Técnica de selección:** RFECV (Recursive Feature Elimination with CV)
+    **Variables utilizadas:** 6 de 9 originales (reducidas por RFECV)
     """)
     st.divider()
     st.subheader("📈 Métricas del Modelo (Test)")
@@ -55,7 +56,7 @@ if "historial" not in st.session_state:
 st.title("🧠 Sistema de Alerta Temprana: Detección de Burnout en TI")
 st.markdown("""
 Este sistema predictivo utiliza el modelo optimizado de **Regresión Logística** desarrollado por el equipo analítico.
-Permite ingresar los indicadores diarios de un desarrollador para calcular la probabilidad de desgaste crítico (Burnout) y apoyar la toma de decisiones preventivas en Gestión Humana.
+Solicita únicamente las **6 variables que el modelo identificó como más relevantes** (tras el proceso de selección RFECV) para calcular la probabilidad de desgaste crítico (Burnout) y apoyar la toma de decisiones preventivas en Gestión Humana.
 """)
 
 st.write("---")
@@ -70,9 +71,7 @@ if "exercise_hours" not in st.session_state:
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Indicadores de Perfil y Carga Laboral")
-    age = st.number_input("Edad del Colaborador:", min_value=18, max_value=70, value=30, step=1)
-    experience_years = st.number_input("Años de Experiencia:", min_value=0, max_value=40, value=5, step=1)
+    st.subheader("📊 Indicadores de Carga Laboral")
 
     daily_work_hours = st.slider(
         "Horas de Trabajo al Día:",
@@ -80,12 +79,11 @@ with col1:
         key="daily_work_hours"
     )
 
-    # 3. Validación suave: advertencia si reuniones no cuadran con horas de trabajo
+    # Validación suave: advertencia si reuniones no cuadran con horas de trabajo
     meetings_per_day = st.slider("Número de Reuniones al Día:", min_value=0, max_value=12, value=3, step=1)
     if meetings_per_day > 0 and daily_work_hours > 0 and (meetings_per_day > daily_work_hours * 1.5):
         st.caption("⚠️ El número de reuniones parece alto respecto a las horas de trabajo ingresadas.")
 
-    commits_per_day = st.slider("Número de Commits al Día:", min_value=0, max_value=40, value=10, step=1)
     bugs_per_day = st.slider("Bugs Reportados al Día:", min_value=0, max_value=30, value=5, step=1)
 
 with col2:
@@ -174,15 +172,14 @@ def obtener_factores_influyentes(pipeline, datos_usuario_dict):
 # 4. PROCESAMIENTO Y PREDICCIÓN (BACKEND)
 if st.button("🚀 Evaluar Estado del Desarrollador", type="primary"):
 
+    # Solo las 6 variables que el modelo (preprocessor_reducido) realmente utiliza,
+    # producto de la selección de variables por RFECV (ver sección 2.4.6 del informe).
     data_usuario = pd.DataFrame([{
-        'age': age,
-        'experience_years': experience_years,
         'daily_work_hours': daily_work_hours,
         'sleep_hours': sleep_hours,
         'exercise_hours': exercise_hours,
         'caffeine_intake': caffeine_intake,
         'meetings_per_day': meetings_per_day,
-        'commits_per_day': commits_per_day,
         'bugs_per_day': bugs_per_day
     }])
 
@@ -235,15 +232,12 @@ if st.button("🚀 Evaluar Estado del Desarrollador", type="primary"):
     reporte_texto = f"""REPORTE DE EVALUACIÓN - SISTEMA DE ALERTA TEMPRANA DE BURNOUT
 Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}
 
---- DATOS INGRESADOS ---
-Edad: {age} años
-Años de experiencia: {experience_years}
+--- DATOS INGRESADOS (variables seleccionadas por RFECV) ---
 Horas de trabajo/día: {daily_work_hours}
 Horas de sueño/día: {sleep_hours}
 Horas de ejercicio/día: {exercise_hours}
 Cafeína/día: {caffeine_intake}
 Reuniones/día: {meetings_per_day}
-Commits/día: {commits_per_day}
 Bugs reportados/día: {bugs_per_day}
 
 --- RESULTADO ---
@@ -259,9 +253,9 @@ Probabilidad de riesgo: {probabilidad * 100:.2f}%
 
     # 6. GUARDAMOS EN EL HISTORIAL DE LA SESIÓN
     st.session_state.historial.append({
-        "Edad": age,
         "Trabajo (h)": daily_work_hours,
         "Sueño (h)": sleep_hours,
+        "Reuniones": meetings_per_day,
         "Resultado": "🚨 Crítico" if prediccion[0] == 1 else "✅ Estable",
         "Probabilidad": f"{probabilidad * 100:.1f}%"
     })
