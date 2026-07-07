@@ -1,5 +1,5 @@
 # ==============================================================================
-# BACKEND & INTERFAZ WEB - TRABAJO FINAL (STREAMLIT)
+# BACKEND & INTERFAZ WEB 
 # ==============================================================================
 import streamlit as st
 import pickle
